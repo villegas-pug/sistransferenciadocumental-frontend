@@ -4,7 +4,7 @@ import Noty from 'noty'
 
 export default (type, text) => {
    new Noty({
-      type,
+      type: type.toLowerCase(),
       theme: 'bootstrap-v4',
       timeout: 2000,
       text,

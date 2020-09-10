@@ -5,10 +5,12 @@ import { obtenerTipoTramite } from 'redux/actions/tipoTramiteAction'
 import LayoutRouter from 'components/routers/LayoutRouter'
 import useAuth from 'hooks/useAuth'
 import PrivateRouter from 'components/routers/PrivateRouter'
-import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
+import PublicRouter from 'components/routers/PublicRouter'
+import Portal from 'components/Portal'
+import { BrowserRouter, Switch, Route } from 'react-router-dom'
 
 export default function () {
-   const { userLogged, logged } = useAuth()
+   const { logged } = useAuth()
    const dispatch = useDispatch()
 
    useEffect(() => {
@@ -17,9 +19,9 @@ export default function () {
    }, [])
 
    return (
-      <BrowserRouter>
+      <BrowserRouter basename='/sistransferenciadocumental'>
          <Switch>
-            <Route path='/portalIngreso' render={() => (<h1>Login</h1>)} />
+            <PublicRouter path='/portal' component={Portal} isLogged={logged} />
             <PrivateRouter path='/' component={LayoutRouter} isLogged={logged} />
          </Switch>
       </BrowserRouter>

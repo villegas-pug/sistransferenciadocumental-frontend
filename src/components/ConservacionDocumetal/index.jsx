@@ -9,22 +9,25 @@ import {
    generarCaja,
    actualizarCajaId,
    actualizarCaja,
-   listarCaja
+   listarCaja,
+   cleanDataCaja,
+   cleanNewIdCaja
 } from 'redux/actions/cajaAction'
 import {
    selectedElementEvaluador,
-   selectedElementTipoTramite
+   selectedElementTipoTramite,
+   cleanSelectedElements
 } from 'redux/actions/autocompleteAction'
 import handleNoty from 'helpers/noty'
 import FloatIconButton from 'components/Styled/FloatIconButton'
-import { Edit, ListAlt, FolderOpen, ImportExport, PermDataSetting } from '@material-ui/icons'
+import { DeleteSweep, Edit, Autorenew, AttachFile, FormatListNumbered, DoneAll } from '@material-ui/icons'
 import { IconButton, Tooltip } from '@material-ui/core'
 import ToExcel from 'components/ToExcel'
 import Table from 'components/Table'
 import { CREATE, UPDATE } from 'constants/crud'
-import CircularProgress from 'components/CircularProgress'
-import { Fade } from 'react-reveal'
+import { Zoom } from 'react-reveal'
 import useAuth from 'hooks/useAuth'
+import Caja from 'models/Caja'
 
 /*-> Manejadores: Para la exportación a excel... */
 const ButtonToExcel = ({ rowData }) => {
@@ -34,32 +37,32 @@ const ButtonToExcel = ({ rowData }) => {
       data={rowData.fondoDocumental}
       tooltip='Exportar'
       columns={[
-         { title: 'Número Expediente', field: 'sNumeroExpediente' },
-         { title: 'Folio', field: 'nFolio' },
-         { title: 'NroPaquete', field: 'sPaquete' }
+         { title: 'Número Expediente', field: 'numeroExpediente' },
+         { title: 'Folio', field: 'folio' },
+         { title: 'NroPaquete', field: 'paquete' }
       ]}
    />
 }
 
-export default function () {
+export default function ConservacionDocumental() {
 
    const dispatch = useDispatch()
-   const { data: tipoTramiteData } = useSelector(store => store.tipoTramite.data)
+   const { data: tipoTramiteData } = useSelector(store => store.tipoTramite)
    const { evaluador: selectedEvaluador, tipoTramite: selectedTipoTramite } = useSelector(store => store.autoComplete)
-   const { usuarios } = useSelector(store => store.usuario.data)
+   const { data: usuarios } = useSelector(store => store.usuario)
    const { newIdCaja, data: cajas, loading } = useSelector(store => store.caja)
+   const { data: userAuth } = useSelector(store => store.auth)
    const { userLogged } = useAuth()
 
    const rFile = useRef()
-   const [file, setFile] = useState([])
+   const [file, setFile] = useState(null)
    const [crud, setCrud] = useState()
 
    /*-> Configuración la tabla... */
    /*----------------------------------------------------------------------*/
-   const configTable = {
+   const configTable = useMemo(() => ({
       actions: [{ icon: 'Editar' }, { icon: 'Exportar Excel' }],
-      components: ({ action, data }) => {
-         const { icon } = action
+      components: ({ action: { icon }, data }) => {
          if (icon === 'Editar')
             return <Tooltip title='Editar' arrow><IconButton
                onClick={() => { handlerActionEditar(data) }}
@@ -68,14 +71,14 @@ export default function () {
             return <ButtonToExcel rowData={data} />
          }
       }
-   }
+   }), [cajas])
 
    const dataTable = useMemo(() => ({
       columns: [
          { title: 'Nro.Caja', field: 'idCaja', type: 'number', width: 50 },
-         { title: 'Serie Documental', field: 'tipoTramite', render: (rowData) => rowData.tipoTramite.sDescripcion, width: 300 },
-         { title: 'Operador', field: 'idOperadorApertura', width: 350 },
-         { title: 'Evaluador', field: 'evaluador', render: (rowData) => rowData.evaluador.sNombre, width: 350 },
+         { title: 'Serie Documental', field: 'tipoTramite', render: (rowData) => rowData.tipoTramite.descripcion, width: 300 },
+         { title: 'Operador', field: 'operador', width: 350, render: ({ operador: { nombre } }) => nombre },
+         { title: 'Evaluador', field: 'evaluador', render: (rowData) => rowData.evaluador.nombre, width: 350 },
          { title: 'Fecha', field: 'fechaCaja', type: 'date', width: 100 },
          { title: 'Estado', field: 'estadoCaja', type: 'boolean', width: 50 }
       ],
@@ -83,7 +86,6 @@ export default function () {
    }), [cajas])
 
    const handlerActionEditar = (caja) => {
-      console.log(`El método handlerActionEditar, se renderizó!!!`)
       const { idCaja, evaluador, tipoTramite } = caja
 
       /*-> Actualiza el store: */
@@ -97,33 +99,32 @@ export default function () {
    /*-> Menejadores: Para los elementos de Autocompletado...*/
    const configAutocompleteTipoTramite = {
       selected: (option, selected) => {
-         if (option.sDescripcion === selected.sDescripcion) {
+         if (option.descripcion === selected.descripcion) {
             dispatch(selectedElementTipoTramite(selected))
             return
          }
       },
-      label: (option) => option.sDescripcion,
+      label: (option) => option.descripcion,
       onInputChange: (e, value) => {
-         dispatch(selectedElementTipoTramite({ sDescripcion: value }))
+         dispatch(selectedElementTipoTramite({ descripcion: value }))
       }
    }
 
    const configAutocompleteEvaluador = {
       selected: (option, selected) => {
-         if (option.sLogin === selected.sLogin) {
+         if (option.login === selected.login) {
             dispatch(selectedElementEvaluador(selected))
             return
          }
       },
-      label: (option) => option.sNombre,
-      onInputChange: (e, value) => dispatch(selectedElementEvaluador({ sNombre: value }))
+      label: (option) => option.nombre,
+      onInputChange: (e, value) => dispatch(selectedElementEvaluador({ nombre: value }))
    }
 
    const handleSubmit = () => {
       if (newIdCaja === '') { handleNoty('warning', '¡No ha inicializado una caja!'); return }
-      if (file.length === 0) { handleNoty('warning', '¡No existen datos para la caja!'); return }
-      if (selectedEvaluador.sNombre === '') { handleNoty('warning', '¡Seleccione un evaluador!'); return }
-      if (selectedTipoTramite.sDescripcion === '') { handleNoty('warning', '¡Seleccione un tipo de trámite!'); return }
+      /* if (selectedEvaluador.nombre === '') { handleNoty('warning', '¡Seleccione un evaluador!'); return } */
+      if (selectedTipoTramite.descripcion === '') { handleNoty('warning', '¡Seleccione un tipo de trámite!'); return }
 
       /*-> Payload para el `REQUEST`...*/
       const data = new FormData()
@@ -131,24 +132,17 @@ export default function () {
 
       switch (crud) {
          case CREATE:
-            data.append("caja", new Blob([JSON.stringify({
-               idOperadorApertura: userLogged,
-               evaluador: selectedEvaluador,
-               tipoTramite: selectedTipoTramite
-            })], { type: 'application/json' }))
+            if (file === null) { handleNoty('warning', '¡No existen datos para la caja!'); return }
+            data.append("caja", new Blob([JSON.stringify(
+               new Caja(userAuth, selectedTipoTramite))], { type: 'application/json' }))
             dispatch(generarCaja(data))
+            setFile(null) /*-> Lmpiar el state file...*/
             break
          case UPDATE:
-            data.append('caja', new Blob([JSON.stringify({
-               idCaja: newIdCaja,
-               idOperadorApertura: userLogged,
-               evaluador: selectedEvaluador,
-               tipoTramite: selectedTipoTramite
-            })], { type: 'application/json' }))
+            data.append('caja', new Blob([JSON.stringify(
+               new Caja(userAuth, selectedTipoTramite, newIdCaja))], { type: 'application/json' }))
             dispatch(actualizarCaja(data))
             break
-         default:
-            return
       }
    }
 
@@ -156,16 +150,22 @@ export default function () {
 
    const handleFileChange = (e) => setFile(e.target.files[0])
 
-   const handleGenerarId = () => {
+   const handleGenerarId = async () => {
       dispatch(generarCajaId())
       setCrud(CREATE)
    }
 
    const handleListar = () => dispatch(listarCaja())
 
+   const handleLimpiarSeleccion = () => {
+      dispatch(cleanSelectedElements())
+      dispatch(cleanDataCaja())
+      dispatch(cleanNewIdCaja())
+   }
+
    return (
       <>
-         <Fade left>
+         <Zoom>
             <FormContainer>
                <TextField
                   label='Caja'
@@ -177,14 +177,14 @@ export default function () {
                   value={newIdCaja}
                />
 
-               <AutocompleteInput
+               {/* <AutocompleteInput
                   placeholder='Evaluador'
                   width={350}
                   variant={1}
                   config={configAutocompleteEvaluador}
                   data={usuarios}
-                  inputValue={selectedEvaluador.sNombre}
-               />
+                  inputValue={selectedEvaluador.nombre}
+               /> */}
 
                <AutocompleteInput
                   placeholder='Serie Documental'
@@ -192,7 +192,7 @@ export default function () {
                   variant={1}
                   config={configAutocompleteTipoTramite}
                   data={tipoTramiteData}
-                  inputValue={selectedTipoTramite.sDescripcion}
+                  inputValue={selectedTipoTramite.descripcion}
                />
 
                {/* -> Input `file` */}
@@ -205,46 +205,48 @@ export default function () {
                   onChange={handleFileChange}
                />
             </FormContainer>
-            <Table dataTable={dataTable} configTable={configTable} />
-         </Fade>
+            <Table dataTable={dataTable} configTable={configTable} search={false} />
+         </Zoom>
 
+         {/*-> Float control's  */}
+         <FloatIconButton
+            color='#999'
+            tooltip='Limpiar controles'
+            icon={DeleteSweep}
+            positionX={{ right: '1rem' }}
+            positionY={{ top: '5rem' }}
+            onClick={() => { handleLimpiarSeleccion() }}
+         />
          <FloatIconButton
             color='#999'
             tooltip='Listar cajas'
-            icon={loading ? CircularProgress : ListAlt}
-            size={4}
+            icon={FormatListNumbered}
             positionX={{ right: '1rem' }}
-            positionY={{ top: '5rem' }}
+            positionY={{ top: '9.1rem' }}
             onClick={handleListar}
             disabled={loading}
          />
 
          <FloatIconButton
-            color='#999'
             tooltip='Generar # de caja'
-            icon={FolderOpen}
-            size={4}
-            positionX={{ right: '1rem' }}
-            positionY={{ top: '9.1rem' }}
-            onClick={handleGenerarId}
-         />
-         <FloatIconButton
-            color='#999'
-            tooltip='Importar excel'
-            icon={ImportExport}
-            size={4}
+            icon={Autorenew}
             positionX={{ right: '1rem' }}
             positionY={{ top: '13.2rem' }}
+            onClick={() => handleGenerarId()}
+         />
+         <FloatIconButton
+            tooltip='Importar excel'
+            icon={AttachFile}
+            positionX={{ right: '1rem' }}
+            positionY={{ top: '17.3rem' }}
             onClick={() => handleFile()}
          />
 
          <FloatIconButton
-            color='#999'
             tooltip='Generar caja'
-            icon={loading ? CircularProgress : PermDataSetting}
-            size={4}
+            icon={DoneAll}
             positionX={{ right: '1rem' }}
-            positionY={{ top: '17.3rem' }}
+            positionY={{ top: '21.4rem' }}
             onClick={() => handleSubmit()}
             disabled={loading}
          />

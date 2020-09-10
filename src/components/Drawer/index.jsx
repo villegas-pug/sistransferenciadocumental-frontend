@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -7,18 +7,20 @@ import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import MailIcon from '@material-ui/icons/Mail';
 import { useDispatch, useSelector } from 'react-redux'
 import { cambiarContentMainDrawer } from 'redux/actions/drawerAction'
 import { useHistory } from 'react-router-dom'
 import Title from 'components/Styled/Title'
+import { Menu, MenuItem, IconButton, Button } from '@material-ui/core'
+import { AccountCircle, ExitToApp } from '@material-ui/icons'
+import useAuth from 'hooks/useAuth'
+
 const drawerWidth = 240
 
 const useStyles = makeStyles((theme) => ({
@@ -84,13 +86,15 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 export default (props) => {
-   const { push } = useHistory()
+   const history = useHistory()
+   const { userLogged, logout } = useAuth()
 
    const classes = useStyles();
 
    const theme = useTheme();
 
    const dispatcher = useDispatch()
+   const [anchorEl, setAnchorEl] = useState(null)
 
    const { configSidebar } = useSelector(store => store.drawer)
 
@@ -102,7 +106,16 @@ export default (props) => {
 
    const handleOnClickOptSidebar = (titulo, path) => {
       dispatcher(cambiarContentMainDrawer(titulo))
-      push(path)
+      history.push(path)
+   }
+
+   const handleOpenMenu = (e) => { setAnchorEl(e.currentTarget) }
+
+   const handleCloseMenu = () => { setAnchorEl(null) }
+
+   const handleCerrarSesion = () => {
+      handleCloseMenu()
+      logout()
    }
 
    return (
@@ -128,6 +141,31 @@ export default (props) => {
                   <MenuIcon />
                </IconButton>
                <Title name="Archivo - Sub Gerencia De Inmigración y Nacionalización" size='2rem' color='#fff' />
+               <div style={{ marginLeft: 'auto' }}>
+                  <Button
+                     id='user-account'
+                     style={{ color: '#fff' }}
+                     aria-controls='menu-account'
+                     aria-haspopup={true}
+                     onClick={handleOpenMenu}
+
+                  >
+                     <AccountCircle />
+                     {userLogged}
+                  </Button>
+
+                  <Menu
+                     keepMounted
+                     id='menu-account'
+                     anchorEl={anchorEl}
+                     open={!!anchorEl}
+                     onClose={handleCloseMenu}
+                  >
+                     <MenuItem onClick={handleCerrarSesion}>
+                        <ExitToApp />Cerrar sesión
+                     </MenuItem>
+                  </Menu>
+               </div>
             </Toolbar>
          </AppBar>
          <Drawer

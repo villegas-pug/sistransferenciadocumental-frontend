@@ -12,8 +12,8 @@
       "axios": "^0.19.2",
       "clsx": "^1.1.1",
       "cross-fetch": "^3.0.5",
-      "formik": "^2.1.4",
-      "material-table": "^1.68.0",
+      "formik": "^2.1.5",
+      "material-table": "^1.69.0",
       "noty": "^3.2.0-beta",
       "react": "^16.13.1",
       "react-dom": "^16.13.1",
@@ -24,9 +24,10 @@
       "react-scripts": "3.4.1",
       "redux": "^4.0.5",
       "redux-thunk": "^2.3.0",
-      "styled-components": "^5.1.1",
+      "styled-components": "^5.2.0",
+      "sweetalert2": "^9.17.2",
       "use-debounce": "^3.4.3",
-      "yup": "^0.29.1"
+      "yup": "^0.29.3"
    },
    "scripts": {
       "start": "react-scripts start",

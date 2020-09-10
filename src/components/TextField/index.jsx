@@ -6,7 +6,7 @@ const useStyle = makeStyles({
       return {
          width: width ? `${width}rem` : '15rem',
          color: color ? color : '#F2F2F2',
-         margin: '.5rem'
+         margin: '.5rem',
       }
    }
 })

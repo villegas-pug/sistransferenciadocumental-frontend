@@ -8,9 +8,10 @@ import {
 import {
    CLEAN_SELECTED_ELEMENTS
 } from 'redux/actions/autocompleteAction'
+
 const initialState = {
-   evaluador: { sNombre: '' },
-   tipoTramite: { sDescripcion: '' }
+   evaluador: { nombre: '' },
+   tipoTramite: { descripcion: '' }
 }
 
 export default (state = initialState, { type, payload }) => {
@@ -22,13 +23,13 @@ export default (state = initialState, { type, payload }) => {
          return { ...state, tipoTramite: { ...payload } }
          break
       case CLEAN_SELECTED_ELEMENTS:
-         return { evaluador: { sNombre: '' }, tipoTramite: { sDescripcion: '' } }
+         return { evaluador: { nombre: '' }, tipoTramite: { descripcion: '' } }
          break
       case CLEAN_SELECTED_EVALUADOR:
-         return { ...state, evaluador: { sNombre: '' } }
+         return { ...state, evaluador: { nombre: '' } }
          break
       case CLEAN_SELECTED_TIPOTRAMITE:
-         return { ...state, tipoTramite: { sDescripcion: '' } }
+         return { ...state, tipoTramite: { descripcion: '' } }
          break
       default:
          return state

@@ -4,6 +4,8 @@ import Drawer from 'components/Drawer'
 import Title from 'components/Styled/Title'
 import ConservacionDocumetal from 'components/ConservacionDocumetal'
 import Inicio from 'components/Inicio'
+import TransferenciaDocumental from 'components/TransferenciaDocumental'
+import BusquedaDocumental from 'components/BusquedaDocumental'
 import { useSelector } from 'react-redux'
 
 export default function () {
@@ -14,8 +16,8 @@ export default function () {
             <Title name={title} size='1.2rem' />
             <Switch>
                <Route path='/conservacion' component={ConservacionDocumetal} />
-               <Route path='/busqueda' component={Inicio} />
-               <Route path='/transferencia' component={Inicio} />
+               <Route path='/busqueda' component={BusquedaDocumental} />
+               <Route path='/transferencia' component={TransferenciaDocumental} />
                <Route path='/' component={() => <h1>Home</h1>} />
             </Switch>
          </Drawer>

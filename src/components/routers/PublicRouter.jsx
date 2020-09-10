@@ -1,8 +1,8 @@
 import React from 'react'
 import { Route, Redirect } from 'react-router-dom'
 
-export default function ({
-   component: LayoutRouter,
+export default function PublicRouter({
+   component: Component,
    isLogged,
    ...rest
 }) {
@@ -10,9 +10,7 @@ export default function ({
       <Route
          {...rest}
          render={(props) => (
-            isLogged
-               ? <LayoutRouter {...props} />
-               : <Redirect to='/portal' />
+            isLogged ? <Redirect to='/' /> : <Component {...props} />
          )}
       />
    )

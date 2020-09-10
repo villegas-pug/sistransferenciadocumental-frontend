@@ -3,7 +3,7 @@ import { IconButton, makeStyles, Tooltip } from '@material-ui/core'
 import Tada from 'react-reveal/Tada'
 
 const useStyle = makeStyles({
-   iconButton: ({ size, color, positionX, positionY }) => ({
+   iconButton: ({ size = 4, color = '#999', positionX, positionY }) => ({
       padding: 0,
       position: 'fixed !important',
       color: color && color,
@@ -14,13 +14,19 @@ const useStyle = makeStyles({
       zIndex: 50,
       ...positionX,
       ...positionY,
+      '&:disabled': {
+         backgroundColor: '#fff'
+      },
       '&:hover': {
-         backgroundColor: '#999'
+         backgroundColor: '#999',
+         '& span svg *': {
+            color: '#fff'
+         }
       }
    }),
-   icon: ({ size }) => ({
-      fontSize: `${size - 1.4}rem`,
-      marginTop: '.45rem',
+   icon: ({ size = 4 }) => ({
+      fontSize: `${size - 2}rem`,
+      marginTop: '.5rem',
       '&:hover': {
          color: '#fff'
       }
@@ -28,8 +34,8 @@ const useStyle = makeStyles({
 })
 
 export default (props) => {
-   const { icon: Icon, disabled, onClick, tooltip } = props
-   const style = useStyle(props)
+   const { icon: Icon, disabled, onClick, tooltip, ...rest } = props
+   const style = useStyle(rest)
    return (
       <>
          <Tooltip title={tooltip} placement='left' arrow>
@@ -37,8 +43,10 @@ export default (props) => {
                className={style.iconButton}
                disabled={disabled}
                onClick={onClick}
+               {...rest}
             >
                <Tada>
+                  {/* <CircularProgress /> */}
                   <Icon className={style.icon} />
                </Tada>
             </IconButton>

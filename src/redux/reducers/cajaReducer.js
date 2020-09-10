@@ -8,7 +8,9 @@ import {
    ACTUALIZAR_CAJA_ERROR,
    LISTAR_CAJA_CARGANDO,
    LISTAR_CAJA_EXITO,
-   LISTAR_CAJA_ERROR
+   LISTAR_CAJA_ERROR,
+   CLEAN_DATA_CAJA,
+   CLEAN_NEW_ID_CAJA
 } from "../actions/cajaAction";
 
 const initialState = {
@@ -46,6 +48,12 @@ export default (state = initialState, { type, payload }) => {
          break
       case LISTAR_CAJA_ERROR:
          return { ...state, loading: false, error: payload }
+         break
+      case CLEAN_DATA_CAJA:
+         return { ...state, data: [] }
+         break
+      case CLEAN_NEW_ID_CAJA:
+         return { ...state, newIdCaja: '' }
          break
       default:
          return state;

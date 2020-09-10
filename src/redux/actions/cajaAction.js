@@ -1,6 +1,7 @@
 import { api } from 'config/axios'
 import Noty from 'helpers/noty'
-import { cleanSelectedElements } from 'redux/actions/autocompleteAction'
+import { SUCCESS, WARNING, ERROR } from 'constants/levelLog'
+import { cleanSelectedElements, cleanSelectedEvaluador } from 'redux/actions/autocompleteAction'
 
 export const GENERAR_CAJA_CARGANDO = 'GENERAR_CAJA_CARGANDO'
 export const GENERAR_CAJA_EXITO = 'GENERAR_CAJA_EXITO'
@@ -14,6 +15,8 @@ export const ACTUALIZAR_CAJA_ERROR = 'ACTUALIZAR_CAJA_ERROR'
 export const LISTAR_CAJA_CARGANDO = 'LISTAR_CAJA_CARGANDO'
 export const LISTAR_CAJA_EXITO = 'LISTAR_CAJA_EXITO'
 export const LISTAR_CAJA_ERROR = 'LISTAR_CAJA_ERROR'
+export const CLEAN_DATA_CAJA = 'CLEAN_DATA_CAJA'
+export const CLEAN_NEW_ID_CAJA = 'CLEAN_NEW_ID_CAJA'
 
 const generarCajaCargando = () => ({ type: GENERAR_CAJA_CARGANDO })
 const generarCajaExito = (payload) => ({ type: GENERAR_CAJA_EXITO, payload })
@@ -22,62 +25,91 @@ const actualizarCajaCargando = () => ({ type: ACTUALIZAR_CAJA_CARGANDO })
 const actualizarCajaExito = (payload) => ({ type: ACTUALIZAR_CAJA_EXITO, payload })
 const actualizarCajaError = (payload) => ({ type: ACTUALIZAR_CAJA_ERROR, payload })
 const listarCajaCargando = () => ({ type: LISTAR_CAJA_CARGANDO })
-const listarCajaExito = (payload) => ({ type: LISTAR_CAJA_EXITO, payload })
 const listarCajaError = (payload) => ({ type: LISTAR_CAJA_ERROR, payload })
+export const cleanDataCaja = () => ({ type: CLEAN_DATA_CAJA })
+export const cleanNewIdCaja = () => ({ type: CLEAN_NEW_ID_CAJA })
+export const listarCajaExito = (payload) => ({ type: LISTAR_CAJA_EXITO, payload })
 
 export const actualizarCajaId = (payload) => ({ type: ACTUALIZAR_CAJA_ID, payload })
 
 export const generarCajaId = () => async (dispatch) => {
-   try {
-      dispatch(generarCajaCargando())
-      const res = await api('/caja/generarId')
-      dispatch(generarCajaExito({ newIdCaja: res.data.id }))
-      Noty('success', '¡Número de caja, generada con exito!')
-   } catch (err) {
-      Noty('error', '¡Ocurrió un error, intentelo nuevamente!')
-      dispatch(generarCajaError(err))
+   dispatch(generarCajaCargando())
+   const { data: { levelLog, message, data } } = await api('/caja/generarId')
+   switch (levelLog) {
+      case SUCCESS:
+         dispatch(generarCajaExito({ newIdCaja: data }))
+         Noty(SUCCESS, message)
+         break
+      case WARNING:
+         dispatch(generarCajaError(message))
+         Noty(WARNING, message)
+         break
+      case ERROR:
+         dispatch(generarCajaError(message))
+         Noty(ERROR, message)
+         break
    }
 }
 
 export const generarCaja = (payload) => async (dispatch) => {
-   try {
-      dispatch(generarCajaCargando())
-      const res = await api({
-         method: 'POST',
-         url: '/caja/generar',
-         data: payload
-      })
-      dispatch(generarCajaExito({ data: res.data, newIdCaja: '' }))
-      dispatch(cleanSelectedElements())
-      Noty('success', '¡Caja creada con exito!')
-   } catch (err) {
-      Noty('error', '¡Ocurrió un error, intentelo nuevamente!')
-      dispatch(generarCajaError(err))
+   dispatch(generarCajaCargando())
+   const { data: { levelLog, message, data } } = await api({
+      method: 'POST',
+      url: '/caja/generar',
+      data: payload
+   })
+   switch (levelLog) {
+      case SUCCESS:
+         dispatch(generarCajaExito({ data, newIdCaja: '' }))
+         Noty(SUCCESS, message)
+         break
+      case WARNING:
+         dispatch(generarCajaError(message))
+         Noty(WARNING, message)
+         break
+      case ERROR:
+         dispatch(generarCajaError(message))
+         Noty(ERROR, message)
+         break
    }
 }
 
 export const actualizarCaja = (payload) => async (dispatch) => {
-   try {
-      dispatch(actualizarCajaCargando())
-      const response = await api({ url: '/caja/actualizar', method: 'PUT', data: payload })
-      dispatch(actualizarCajaExito({ data: response.data, newIdCaja: '' }))
-      dispatch(cleanSelectedElements())
-      Noty('success', '¡Caja actualizada con exito!')
-   } catch (err) {
-      dispatch(actualizarCajaError(err))
-      Noty('error', '¡Ocurrió un error, intentelo nuevamente!')
+   dispatch(actualizarCajaCargando())
+   const {
+      data: { levelLog, message, data }
+   } = await api({ url: '/caja/actualizar', method: 'PUT', data: payload })
+   switch (levelLog) {
+      case SUCCESS:
+         dispatch(actualizarCajaExito({ data, newIdCaja: '' }))
+         dispatch(cleanSelectedElements())
+         Noty(SUCCESS, message)
+         break
+      case WARNING:
+         dispatch(actualizarCajaError(message))
+         Noty(WARNING, message)
+         break
+      case ERROR:
+         dispatch(actualizarCajaError(message))
+         Noty(ERROR, message)
+         break
    }
 }
 
 export const listarCaja = () => async (dispatch) => {
-   try {
-      dispatch(listarCajaCargando())
-      const response = await api('/caja/listar')
-      dispatch(listarCajaExito({ data: response.data, newIdCaja: '' }))
-      dispatch(cleanSelectedElements())
-      Noty('success', '¡Cajas listadas exitosamenta!')
-   } catch (err) {
-      dispatch(listarCajaError(err))
-      Noty('error', '¡Ocurrió un error, intentelo nuevamente!')
+   dispatch(listarCajaCargando())
+   const { data: { levelLog, message, data } } = await api('/caja/listar')
+   switch (levelLog) {
+      case SUCCESS:
+         dispatch(listarCajaExito({ data, newIdCaja: '' }))
+         dispatch(cleanSelectedElements())
+         break
+      case WARNING:
+         dispatch(listarCajaError(message))
+         break
+      case ERROR:
+         dispatch(listarCajaError(message))
+         Noty(ERROR, message)
+         break
    }
 }
