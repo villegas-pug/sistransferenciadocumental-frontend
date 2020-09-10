@@ -78,7 +78,7 @@ export default function ConservacionDocumental() {
          { title: 'Nro.Caja', field: 'idCaja', type: 'number', width: 50 },
          { title: 'Serie Documental', field: 'tipoTramite', render: (rowData) => rowData.tipoTramite.descripcion, width: 300 },
          { title: 'Operador', field: 'operador', width: 350, render: ({ operador: { nombre } }) => nombre },
-         { title: 'Evaluador', field: 'evaluador', render: (rowData) => rowData.evaluador.nombre, width: 350 },
+         { title: 'Evaluador', field: 'evaluador', width: 350 },
          { title: 'Fecha', field: 'fechaCaja', type: 'date', width: 100 },
          { title: 'Estado', field: 'estadoCaja', type: 'boolean', width: 50 }
       ],
